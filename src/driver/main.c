@@ -1,27 +1,27 @@
 #include <ntddk.h>
 #include <intrin.h>
 
-// PCIe Gecikme Eşiği (Deneysel Değer)
+// PCIe Gecikme Eşiği
 #define LATENCY_THRESHOLD_CLOCKS 450
 #define PCI_CONFIG_ADDRESS 0xCF8
 #define PCI_CONFIG_DATA    0xCFC
 
-// Belirli bir PCIe aygıtının konfigürasyonunu oku (Port I/O taklidi)
+// Belirli bir PCIe aygıtının konfigürasyonunu oku
 ULONG ReadPciConfig(ULONG bus, ULONG slot, ULONG func, ULONG offset) {
     ULONG address = (ULONG)((1 << 31) | (bus << 16) | (slot << 11) | (func << 8) | (offset & 0xfc));
     __outdword(PCI_CONFIG_ADDRESS, address);
     return __indword(PCI_CONFIG_DATA);
 }
 
-// Donanımsal Zamanlama Analizi (TSC Jitter Tracking)
+// Donanımsal Zamanlama Analizi
 VOID AnalyzeBusJitter() {
     unsigned __int64 start, end, delta;
     
-    // İşlemci seri hale getirme (Serialization) - Ölçüm doğruluğu için
+    // Serialization
     __cpuid((int[4]){0}, 0); 
     start = __rdtsc();
     
-    // Sahte bir MMIO okuması simülasyonu (DMA cihazları veriyolunu meşgul eder)
+    // Sahte bir MMIO okuması simülasyonu
     for(int i = 0; i < 100; i++) {
         ReadPciConfig(0, i, 0, 0); 
     }
